@@ -1,15 +1,7 @@
-from datetime import datetime
-
-from typing import Annotated, List, Optional
-
-from fastapi import Depends, FastAPI, HTTPException, Path, Query
-
+from typing import Annotated, List
+from fastapi import Depends, FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-
-from sqlmodel import Session, SQLModel, select
-
-from pydantic import BaseModel, create_model
-
+from sqlmodel import Session, select
 from domain import engine, Item, Pessoa
 
 #injecao dependencia
@@ -49,16 +41,13 @@ async def root():
 #async def select(attributes: List[str], dictionaries: List[str], expressions: List[str]):
 #    return ""
 
-class Pessoa :
-    pass
-
-@app.get("/from/{dictionary}", response_model=List)
-async def get_from(dictionary: str):
+@app.get("/from/{clazz}", response_model=List)
+async def get_from(clazz: str):
     res = []
     with Session(engine) as session:
-        l = session.exec(select(Item).where(Item.dictionary==dictionary).order_by(Item.oid)).all()
+        l = session.exec(select(Item).where(Item.clazz==clazz).order_by(Item.oid)).all()
         actOid = ""
-        clazz = eval(dictionary)
+        clazz = eval(clazz)
         obj = clazz()
         for i in l :
             if i.oid != actOid :
@@ -69,9 +58,9 @@ async def get_from(dictionary: str):
             setattr(obj, i.key, i.value)
     return res
 
-@app.get("/from/{dictionary}/returns/", response_model=List)
-async def get_select(dictionary: str, keys: List[str] = Query()):
-    print(dictionary)
+@app.get("/from/{clazz}/returns/", response_model=List)
+async def get_select(clazz: str, keys: List[str] = Query()):
+    print(clazz)
     print(keys)
     return []
 
