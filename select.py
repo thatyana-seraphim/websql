@@ -36,7 +36,7 @@ def apply_where(df, where: str):
         return df
 
 
-# -----------------------------
+# ----------------------------- 
 # Parser de SELECT + GROUP BY
 # -----------------------------
 def apply_select_groupby(df, select: str, groupby: str):
