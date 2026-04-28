@@ -1,8 +1,8 @@
 from lexico.lexicoAutomato import Scanner
-from sintatico.sintaticoAutomato import ParserPrincipal
+from sintatico.parser_principal import ParserPrincipal
 from gerador.tradutorAutomato import TradutorSQL
 
-entrada = "URLTableusuarios"
+entrada = "/usuarios:u,pedidos:p?select=sum.u.valor, p.quant"
 
 print(f"URL: {entrada}\n")
 

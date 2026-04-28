@@ -1,4 +1,6 @@
 from semantico.tabela_simbolos import TabelaSimbolos
+from sintatico.sub_automatos.automato_tables import AutomatoTables
+from sintatico.sub_automatos.automato_select import AutomatoSelect
 
 class ParserPrincipal:
     def __init__(self, tokens):
@@ -24,6 +26,7 @@ class ParserPrincipal:
         return token
 
     def analisar(self):
+        """
         # start -> q0 -> q1
         self.consumir('KEYWORD', 'URL')
         self.consumir('KEYWORD', 'Tables')
@@ -36,6 +39,23 @@ class ParserPrincipal:
             raise Exception("Esperado o nome da tabela após 'Tables'")
 
         self.fluxo_q1()
+        
+        """
+
+        # Inicia e delega o fluxo para o sub-autômato de Tables
+        sub_tables = AutomatoTables(self)
+        sub_tables.analisar()
+
+        if self.token_atual.valor == 'select':
+            # 1. Delega para o sub-autômato processar a lista de colunas
+            sub_select = AutomatoSelect(self)
+            sub_select.analisar()
+            # 2. Ao voltar do sub-autômato, verificamos se há um '&' 
+            # para seguir para a próxima cláusula (Where, Join, etc)
+            if self.token_atual and self.token_atual.valor == '&':
+                self.consumir('PONTUACAO', '&')
+                # self.fluxo_proximas_clausulas()
+
         return self.ts  # Retorna a tabela preenchida!
 
     def fluxo_q1(self):

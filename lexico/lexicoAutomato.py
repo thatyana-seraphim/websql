@@ -10,17 +10,26 @@ class Token:
 
 class Scanner:
     def __init__(self):
-        # Captura nossas palavras-chave exatas (Grupo 1) OU captura qualquer outro texto como valor (Grupo 2)
-        # Ex: "URLTablesusuarios" -> 'URL', 'Tables', 'usuarios'
-        padrao = r'(URL|Tables|join|select|where|orderby|groupby|having|\&)|([a-zA-Z0-9_,=><\']+)'
+        # 1. Pontuação Estrutural do seu autômato
+        pontuacao = r'(/|:|,|\?|\&|\.|=|\*)'
+        
+        # 2. Palavras reservadas e Expressões que você definiu
+        relacional = r'\b(eq|neg|gt|gte|lt|lte|like|in)\b'
+        agregacao = r'\b(count|sum|avg|min|max)\b'
+        keywords = r'\b(join|select|where|orderby|groupby|having)\b'
+        
+        # 3. Identificadores (letra seguida de letras/dígitos) e Números
+        identificador = r'\b([a-zA-Z][a-zA-Z0-9_]*)\b' 
+        numero = r'\b([0-9]+)\b'
+
+        # Agrupa tudo em um único Regex usando grupos nomeados para facilitar
+        padrao = f'(?P<PONTUACAO>{pontuacao})|(?P<RELACIONAL>{relacional})|(?P<AGREGACAO>{agregacao})|(?P<KEYWORD>{keywords})|(?P<IDENTIFICADOR>{identificador})|(?P<NUMERO>{numero})'
         self.regex = re.compile(padrao)
 
     def tokenizar(self, entrada_bruta):
         tokens = []
         for match in self.regex.finditer(entrada_bruta):
-            keyword, valor = match.groups()
-            if keyword:
-                tokens.append(Token('KEYWORD', keyword))
-            elif valor:
-                tokens.append(Token('VALUE', valor))
+            tipo = match.lastgroup
+            valor = match.group(tipo)
+            tokens.append(Token(tipo, valor))
         return tokens
