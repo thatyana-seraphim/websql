@@ -25,7 +25,7 @@ class AutomatoTables:
         token_alias = self.ctx.consumir('IDENTIFICADOR')
         
         # Salva na nossa Tabela de Símbolos!
-        self.ctx.ts.adicionar_tabela(self.tabela_temporaria, token_alias.valor)
+        self.ctx.ts.registrar_nova_tabela(self.tabela_temporaria, token_alias.valor)
         self.fluxo_q3()
 
     def fluxo_q3(self):

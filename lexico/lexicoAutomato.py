@@ -11,12 +11,12 @@ class Token:
 class Scanner:
     def __init__(self):
         # 1. Pontuação Estrutural do seu autômato
-        pontuacao = r'(/|:|,|\?|\&|\.|=|\*)'
+        pontuacao = r'(/|:|,|\?|\&|\.|=|\*|\(|\))'
         
         # 2. Palavras reservadas e Expressões que você definiu
         relacional = r'\b(eq|neg|gt|gte|lt|lte|like|in)\b'
         agregacao = r'\b(count|sum|avg|min|max)\b'
-        keywords = r'\b(join|select|where|orderby|groupby|having)\b'
+        keywords = r'\b(select|expand|on|where|orderby|groupby|having|and|or|asc|desc)\b'
         
         # 3. Identificadores (letra seguida de letras/dígitos) e Números
         identificador = r'\b([a-zA-Z][a-zA-Z0-9_]*)\b' 

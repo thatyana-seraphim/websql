@@ -1,6 +1,11 @@
 from semantico.tabela_simbolos import TabelaSimbolos
 from sintatico.sub_automatos.automato_tables import AutomatoTables
+from sintatico.sub_automatos.automato_join import AutomatoJoin
 from sintatico.sub_automatos.automato_select import AutomatoSelect
+from sintatico.sub_automatos.automato_where import AutomatoWhere
+from sintatico.sub_automatos.automato_groupby import AutomatoGroupby
+from sintatico.sub_automatos.automato_having import AutomatoHaving
+from sintatico.sub_automatos.automato_orderby import AutomatoOrderby
 
 class ParserPrincipal:
     def __init__(self, tokens):
@@ -14,49 +19,59 @@ class ParserPrincipal:
     def consumir(self, tipo_esperado=None, valor_esperado=None):
         token = self.token_atual
         if not token:
-            raise Exception("Fim inesperado da URL.")
+            raise Exception("Erro Sintático: Fim inesperado da URL.")
             
         if tipo_esperado and token.tipo != tipo_esperado:
-            raise Exception(f"Sintaxe Errada: Esperava tipo '{tipo_esperado}', obteve '{token.tipo}'")
+            raise Exception(f"Erro Sintático: Esperava tipo '{tipo_esperado}', obteve '{token.tipo}'")
         if valor_esperado and token.valor != valor_esperado:
-            raise Exception(f"Sintaxe Errada: Esperava '{valor_esperado}', obteve '{token.valor}'")
+            raise Exception(f"Erro Sintático: Esperava '{valor_esperado}', obteve '{token.valor}'")
         
         self.pos += 1
         self.token_atual = self.tokens[self.pos] if self.pos < len(self.tokens) else None
         return token
 
     def analisar(self):
-        """
-        # start -> q0 -> q1
-        self.consumir('KEYWORD', 'URL')
-        self.consumir('KEYWORD', 'Tables')
-        
-        # O próximo token DEVE ser o nome da tabela principal (um VALUE)
-        if self.token_atual and self.token_atual.tipo == 'VALUE':
-            tabela = self.consumir('KEYWORD' if False else 'VALUE') # Hack simples p/ clareza
-            self.ts.tabela_principal = tabela.valor
-        else:
-            raise Exception("Esperado o nome da tabela após 'Tables'")
-
-        self.fluxo_q1()
-        
-        """
 
         # Inicia e delega o fluxo para o sub-autômato de Tables
         sub_tables = AutomatoTables(self)
         sub_tables.analisar()
 
-        if self.token_atual.valor == 'select':
-            # 1. Delega para o sub-autômato processar a lista de colunas
-            sub_select = AutomatoSelect(self)
-            sub_select.analisar()
-            # 2. Ao voltar do sub-autômato, verificamos se há um '&' 
-            # para seguir para a próxima cláusula (Where, Join, etc)
-            if self.token_atual and self.token_atual.valor == '&':
+        while self.token_atual:
+            if self.token_atual.valor == '&':
+                # Consome o separador de blocos e avança
                 self.consumir('PONTUACAO', '&')
-                # self.fluxo_proximas_clausulas()
+                continue
+                
+            elif self.token_atual.valor == 'expand':
+                # Delega para o Automato de Join
+                AutomatoJoin(self).analisar()
+                
+            elif self.token_atual.valor == 'select':
+                # Delega para o Automato de Select
+                AutomatoSelect(self).analisar()
 
-        return self.ts  # Retorna a tabela preenchida!
+            elif self.token_atual.valor == 'where':
+                # Delega para o Automato de Where
+                AutomatoWhere(self).analisar()
+            
+            elif self.token_atual.valor == 'groupby':
+                # Delega para o Automato de GroupBy
+                AutomatoGroupby(self).analisar()
+            
+            elif self.token_atual.valor == 'having':
+                # Delega para o Automato de Having
+                AutomatoHaving(self).analisar()
+
+            elif self.token_atual.valor == 'orderby':
+                # Delega para o Automato de OrderBy
+                AutomatoOrderby(self).analisar()    
+        
+            else:
+                # Quando encontrar uma palavra ainda não implementada (ex: where, orderby)
+                # o loop é quebrado até criarmos os próximos sub-autômatos.
+                break
+                
+        return self.ts
 
     def fluxo_q1(self):
         if self.token_atual and self.token_atual.valor == 'join':

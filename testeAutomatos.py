@@ -2,8 +2,9 @@ from lexico.lexicoAutomato import Scanner
 from sintatico.parser_principal import ParserPrincipal
 from gerador.tradutorAutomato import TradutorSQL
 
-entrada = "/usuarios:u,pedidos:p?select=sum.u.valor, p.quant"
-
+# entrada = "/Produtos:p?expand=ProdutosFornecedores:pf,on(p.prod_id.eq.pf.prod_id)&expand=Fornecedor:f,on(pf.fornecedor_id.eq.f.fornecedor_id)" + "&select=p.nome,f.nome" + "&where=p.preco.lt.1,and(p.estoque.lt.10)" + "&groupby=h.user"
+# entrada = "/Aluno:a?select=b.cidade,avg.a.idade,avg.a.renda&groupby=a.cidade&having=avg.a.idade.gt.18,and.avg.a.renda.lte.1500"
+entrada = "/Aluno:a,Curso:c?select=a.nome,c.sigla&where=a.idade.gt.18,and(c.sigla.eq.a.sigla_curso)&orderby=a.nome.asc"
 print(f"URL: {entrada}\n")
 
 # 1. Léxico
@@ -22,5 +23,5 @@ print(tabela_simbolos, "\n")
 tradutor = TradutorSQL(tabela_simbolos)
 sql_final = tradutor.gerar()
 
-print("3. SQL FINAL GERADO:")
-print(f"🚀 {sql_final}")
+print("🚀3. SQL FINAL GERADO:")
+print(f"\n{sql_final}")
