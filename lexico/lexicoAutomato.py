@@ -10,20 +10,20 @@ class Token:
 
 class Scanner:
     def __init__(self):
-        # 1. Pontuação Estrutural do seu autômato
-        pontuacao = r'(/|:|,|\?|\&|\.|=|\*|\(|\))'
+        # Autômato String: q0 -> q1 ['] -> q2 [letra/digito] -> q3 [']
+        string = r"(?P<STRING>'[^']*')" 
         
-        # 2. Palavras reservadas e Expressões que você definiu
-        relacional = r'\b(eq|neg|gt|gte|lt|lte|like|in)\b'
-        agregacao = r'\b(count|sum|avg|min|max)\b'
-        keywords = r'\b(select|expand|on|where|orderby|groupby|having|and|or|asc|desc)\b'
+        # Autômato Número: Suporta '-', dígitos, e a transição da ',' (ex: -10,5)
+        numero = r"(?P<NUMERO>-?\d+(,\d+)?)" 
         
-        # 3. Identificadores (letra seguida de letras/dígitos) e Números
-        identificador = r'\b([a-zA-Z][a-zA-Z0-9_]*)\b' 
-        numero = r'\b([0-9]+)\b'
+        pontuacao = r"(?P<PONTUACAO>[/:,\?&\.=\(\)\*])"
+        relacional = r"(?P<RELACIONAL>\b(eq|neg|gt|gte|lt|lte|like|in)\b)"
+        agregacao = r"(?P<AGREGACAO>\b(count|sum|avg|min|max)\b)"
+        keywords = r"(?P<KEYWORD>\b(select|expand|on|where|orderby|groupby|having|and|or|asc|desc)\b)"
+        identificador = r"(?P<IDENTIFICADOR>\b[a-zA-Z][a-zA-Z0-9_]*\b)"
 
-        # Agrupa tudo em um único Regex usando grupos nomeados para facilitar
-        padrao = f'(?P<PONTUACAO>{pontuacao})|(?P<RELACIONAL>{relacional})|(?P<AGREGACAO>{agregacao})|(?P<KEYWORD>{keywords})|(?P<IDENTIFICADOR>{identificador})|(?P<NUMERO>{numero})'
+        # O Regex compila todas as regras na ordem correta
+        padrao = f"{string}|{numero}|{relacional}|{agregacao}|{keywords}|{identificador}|{pontuacao}"
         self.regex = re.compile(padrao)
 
     def tokenizar(self, entrada_bruta):

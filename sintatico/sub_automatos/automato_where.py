@@ -1,4 +1,5 @@
 from sintatico.sub_automatos.automato_funcao import AutomatoFuncao
+from sintatico.sub_automatos.automato_valor import AutomatoValor
 
 class AutomatoWhere:
     def __init__(self, parser_context):
@@ -29,11 +30,8 @@ class AutomatoWhere:
         self.ctx.consumir('PONTUACAO', '.')
         relacional = self.ctx.consumir('RELACIONAL').valor
         
-        # Correção estrutural: Inserindo o ponto exigido pela sintaxe
-        self.ctx.consumir('PONTUACAO', '.')
-        
         # Em q7, lemos o alvo (Pode ser um 'alias' ou um 'valor')
-        alvo = self.ctx.consumir().valor
+        self.ctx.consumir('PONTUACAO', '.')
         
         condicao = {
             'esq_alias': alias_esq, 
@@ -41,20 +39,34 @@ class AutomatoWhere:
             'op': relacional
         }
 
-        # Bifurcação a partir de q7
-        if self.ctx.token_atual and self.ctx.token_atual.valor == '.':
+        # Bifurcação a partir de q7 baseada no TIPO do token
+        token_alvo = self.ctx.token_atual
+        
+        if token_alvo.tipo == 'IDENTIFICADOR':
             # É Alias.Coluna (q7 -> q8 -> q9 -> q10)
+            alias_dir = self.ctx.consumir('IDENTIFICADOR').valor
             self.ctx.consumir('PONTUACAO', '.')
             col_dir = self.ctx.consumir('IDENTIFICADOR').valor
-            self.ctx.ts.validar_alias_existente(alvo) # alvo era o alias
+            
+            # Validação Semântica do Alias da direita
+            self.ctx.ts.validar_alias_existente(alias_dir) 
             
             condicao['dir_tipo'] = 'coluna'
-            condicao['dir_alias'] = alvo
+            condicao['dir_alias'] = alias_dir
             condicao['dir_col'] = col_dir
-        else:
+            
+        elif token_alvo.tipo in ['NUMERO', 'STRING']:
             # É um valor estático (q7 -> q10)
+            # Delega para o AutomatoValor processar e formatar (ex: '10,5' -> '10.5')
+            valor_estatico = AutomatoValor(self.ctx).analisar()
+            
             condicao['dir_tipo'] = 'valor'
-            condicao['dir_val'] = alvo
+            condicao['dir_val'] = valor_estatico
+            
+        else:
+            raise Exception(f"Erro no Where: O alvo da condição deve ser 'alias.coluna', 'numero' ou 'string'. Obtido: {token_alvo.valor}")
+            
+        return condicao
             
         return condicao
 

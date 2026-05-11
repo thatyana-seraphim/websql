@@ -1,3 +1,5 @@
+from sintatico.sub_automatos.automato_valor import AutomatoValor
+
 class AutomatoFuncao:
     def __init__(self, parser_context):
         self.ctx = parser_context
@@ -22,8 +24,6 @@ class AutomatoFuncao:
         self.ctx.consumir('PONTUACAO', '.')
         
         # q8: Decisão entre ir para q11 (valor) ou q9 (alias)
-        alvo = self.ctx.consumir().valor # Pode ser numero ou string
-        
         condicao = {
             'logico': logico,
             'esq_alias': alias_esq,
@@ -31,20 +31,34 @@ class AutomatoFuncao:
             'relacional': relacional
         }
 
-        if self.ctx.token_atual and self.ctx.token_atual.valor == '.':
+        # Bifurcação a partir de q8 baseada no TIPO do token
+        token_alvo = self.ctx.token_atual
+        
+        if token_alvo.tipo == 'IDENTIFICADOR':
             # q8 -> q9 -> q10 -> q11 (É um Alias.Coluna)
+            alias_dir = self.ctx.consumir('IDENTIFICADOR').valor
             self.ctx.consumir('PONTUACAO', '.')
             col_dir = self.ctx.consumir('IDENTIFICADOR').valor
-            self.ctx.ts.validar_alias_existente(alvo) # alvo era o alias
+            
+            # Validação Semântica do Alias da direita
+            self.ctx.ts.validar_alias_existente(alias_dir)
             
             condicao['dir_tipo'] = 'coluna'
-            condicao['dir_alias'] = alvo
+            condicao['dir_alias'] = alias_dir
             condicao['dir_col'] = col_dir
-        else:
+            
+        elif token_alvo.tipo in ['NUMERO', 'STRING']:
             # q8 -> q11 (É um valor estático)
+            # Delega para o AutomatoValor processar e formatar (ex: '-10,5' ou 'ativo')
+            valor_estatico = AutomatoValor(self.ctx).analisar()
+            
             condicao['dir_tipo'] = 'valor'
-            condicao['dir_val'] = alvo
+            condicao['dir_val'] = valor_estatico
+            
+        else:
+            raise Exception(f"Erro na Função Lógica: O alvo deve ser 'alias.coluna', 'numero' ou 'string'. Obtido: {token_alvo.valor}")
 
         # q11 -> q12 [label=")"]
         self.ctx.consumir('PONTUACAO', ')')
+        
         return condicao # Retorna o dicionário para o Join!
