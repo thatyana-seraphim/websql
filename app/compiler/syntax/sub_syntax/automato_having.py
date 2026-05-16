@@ -1,4 +1,4 @@
-from sintatico.sub_automatos.automato_valor import AutomatoValor
+from app.compiler.syntax.sub_syntax.automato_valor import AutomatoValor
 
 class AutomatoHaving:
     def __init__(self, parser_context):

@@ -1,5 +1,5 @@
-from sintatico.sub_automatos.automato_funcao import AutomatoFuncao
-from sintatico.sub_automatos.automato_valor import AutomatoValor
+from app.compiler.syntax.sub_syntax.automato_funcao import AutomatoFuncao
+from app.compiler.syntax.sub_syntax.automato_valor import AutomatoValor
 
 class AutomatoJoin:
     def __init__(self, parser_context):

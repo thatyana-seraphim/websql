@@ -1,11 +1,11 @@
-from semantico.tabela_simbolos import TabelaSimbolos
-from sintatico.sub_automatos.automato_tables import AutomatoTables
-from sintatico.sub_automatos.automato_join import AutomatoJoin
-from sintatico.sub_automatos.automato_select import AutomatoSelect
-from sintatico.sub_automatos.automato_where import AutomatoWhere
-from sintatico.sub_automatos.automato_groupby import AutomatoGroupby
-from sintatico.sub_automatos.automato_having import AutomatoHaving
-from sintatico.sub_automatos.automato_orderby import AutomatoOrderby
+from app.compiler.semantic.tabela_simbolos import TabelaSimbolos
+from app.compiler.syntax.sub_syntax.automato_tables import AutomatoTables
+from app.compiler.syntax.sub_syntax.automato_join import AutomatoJoin
+from app.compiler.syntax.sub_syntax.automato_select import AutomatoSelect
+from app.compiler.syntax.sub_syntax.automato_where import AutomatoWhere
+from app.compiler.syntax.sub_syntax.automato_groupby import AutomatoGroupby
+from app.compiler.syntax.sub_syntax.automato_having import AutomatoHaving
+from app.compiler.syntax.sub_syntax.automato_orderby import AutomatoOrderby
 
 class ParserPrincipal:
     def __init__(self, tokens):
