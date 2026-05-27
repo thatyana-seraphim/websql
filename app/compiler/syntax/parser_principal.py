@@ -16,22 +16,45 @@ class ParserPrincipal:
         # Instancia a Tabela de Símbolos (A Memória do Compilador)
         self.ts = TabelaSimbolos()
 
+    def throw_error(self, message: str):
+        """
+        Monta uma string mostrando exatamente onde o compilador se perdeu.
+        Pega os 3 tokens anteriores e os 3 próximos.
+        """
+        inicio = max(0, self.pos - 3)
+        fim = min(len(self.tokens), self.pos + 4)
+        
+        # Monta o trecho do erro
+        trecho_tokens = []
+        for i in range(inicio, fim):
+            if i == self.pos:
+                # Destaca o token que causou o problema com colchetes
+                trecho_tokens.append(f"[{self.tokens[i].valor}]")
+            else:
+                trecho_tokens.append(self.tokens[i].valor)
+                
+        contexto_visual = "".join(trecho_tokens)
+        
+        # Levanta a exceção com a mensagem original + o contexto
+        raise Exception(f"Syntax Error: {message} | Perto de: '... {contexto_visual} ...'")
+
     def consumir(self, tipo_esperado=None, valor_esperado=None):
         token = self.token_atual
         if not token:
-            raise Exception("Erro Sintático: Fim inesperado da URL.")
+            self.throw_error("Fim inesperado da URL.")
             
         if tipo_esperado and token.tipo != tipo_esperado:
-            raise Exception(f"Erro Sintático: Esperava tipo '{tipo_esperado}', obteve '{token.tipo}'")
+           self.throw_error(f"Esperava um tipo '{tipo_esperado}', mas obteve '{token.tipo}' no valor '{token.valor}'")
+
         if valor_esperado and token.valor != valor_esperado:
-            raise Exception(f"Erro Sintático: Esperava '{valor_esperado}', obteve '{token.valor}'")
+            self.throw_error(f"Esperava o valor '{valor_esperado}', mas obteve '{token.valor}'")
         
         self.pos += 1
         self.token_atual = self.tokens[self.pos] if self.pos < len(self.tokens) else None
         return token
 
-    def analisar(self):
 
+    def analisar(self):
         # Inicia e delega o fluxo para o sub-autômato de Tables
         sub_tables = AutomatoTables(self)
         sub_tables.analisar()
@@ -67,41 +90,7 @@ class ParserPrincipal:
                 AutomatoOrderby(self).analisar()    
         
             else:
-                # Quando encontrar uma palavra ainda não implementada (ex: where, orderby)
-                # o loop é quebrado até criarmos os próximos sub-autômatos.
+                self.throw_error(f"Bloco desconhecido ou não implementado: '{self.token_atual.valor}'")
                 break
                 
         return self.ts
-
-    def fluxo_q1(self):
-        if self.token_atual and self.token_atual.valor == 'join':
-            self.consumir('KEYWORD', 'join')
-            # Pega o valor do join (ex: tabela categorias)
-            if self.token_atual and self.token_atual.tipo == 'VALUE':
-                alvo_join = self.consumir('VALUE')
-                self.ts.tabelas_join.append(alvo_join.valor)
-            
-            # Aqui entraria a chamada para o sub-autômato de Join no futuro
-            self.consumir('KEYWORD', '&')
-            self.fluxo_q1() # Recursão para múltiplos joins ou ir pro select
-
-        elif self.token_atual and self.token_atual.valor == 'select':
-            self.consumir('KEYWORD', 'select')
-            # Se tiver colunas especificadas após o select, salva na tabela de símbolos
-            if self.token_atual and self.token_atual.tipo == 'VALUE':
-                colunas = self.consumir('VALUE')
-                self.ts.colunas_select = colunas.valor
-            
-            # Continua o fluxo (where, orderby, etc... simplificado aqui para brevidade)
-            if self.token_atual and self.token_atual.valor == '&':
-                self.consumir('KEYWORD', '&')
-                self.fluxo_opcionais()
-
-    def fluxo_opcionais(self):
-        # Aqui ficarão as transições para q6 (where), q8 (groupby), q12 (orderby)...
-        if self.token_atual and self.token_atual.valor == 'where':
-            self.consumir('KEYWORD', 'where')
-            if self.token_atual and self.token_atual.tipo == 'VALUE':
-                condicao = self.consumir('VALUE')
-                self.ts.condicao_where = condicao.valor
-            # (Pode chamar um `&` e continuar...)

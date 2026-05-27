@@ -26,10 +26,14 @@ class Scanner:
         padrao = f"{string}|{numero}|{relacional}|{agregacao}|{keywords}|{identificador}|{pontuacao}"
         self.regex = re.compile(padrao)
 
-    def tokenizar(self, entrada_bruta):
+    def tokenize(self, entrada_bruta):
         tokens = []
         for match in self.regex.finditer(entrada_bruta):
             tipo = match.lastgroup
             valor = match.group(tipo)
+
+            if tipo == 'ERRO':
+                raise Exception(f"Lexical Error: Caractere inválido ou desconhecido '{valor}' encontrado na URL.")
+                
             tokens.append(Token(tipo, valor))
         return tokens
