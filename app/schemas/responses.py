@@ -6,6 +6,8 @@ class SuccessResponse(BaseModel):
     input_query: str
     sql: str
     recognized_tables: List[str]
+    result: List[dict]
+    is_correct: Optional[bool] = None
 
 class ErrorResponse(BaseModel):
     status: str = "error"

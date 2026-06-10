@@ -40,8 +40,16 @@ class TradutorSQL:
         else:
             partes_select = []
             for c in self.ts.colunas_select:
-                campo = f"{c['alias']}.{c['coluna']}"
-                partes_select.append(f"{c['funcao'].upper()}({campo})" if c['funcao'] else campo)
+                campo_base = f"{c['alias']}.{c['coluna']}"
+                # Gera um alias único no formato alias_coluna (ex: a_nome, c_nome)
+                alias_final = f"{c['alias']}_{c['coluna']}"
+                
+                if c['funcao']:
+                    # Se tiver função (ex: COUNT), o alias mantém o formato limpo
+                    partes_select.append(f"{c['funcao'].upper()}({campo_base}) AS {alias_final}")
+                else:
+                    partes_select.append(f"{campo_base} AS {alias_final}")
+                    
             select_str = ", ".join(partes_select) if partes_select else "*"
 
         sql = f"SELECT {select_str}\n"

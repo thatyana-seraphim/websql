@@ -67,8 +67,7 @@ class AutomatoWhere:
             raise Exception(f"Erro no Where: O alvo da condição deve ser 'alias.coluna', 'numero' ou 'string'. Obtido: {token_alvo.valor}")
             
         return condicao
-            
-        return condicao
+
 
     def fluxo_q10(self, condicoes_extras):
         token = self.ctx.token_atual
