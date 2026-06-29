@@ -22,7 +22,8 @@ class CompilerService:
         is_correct = False
         generated_sql = ""
         symbol_table = None
-        compilation_error = None
+        compilation_error = None 
+        formatted_results = []
 
         try:
             # 1. Lexical Analysis
@@ -39,9 +40,15 @@ class CompilerService:
             # 3. Code Generation
             translator = TradutorSQL(symbol_table)
             generated_sql = translator.gerar()
+
+             # 4. Execute SQL
+            statement_sql = text(generated_sql)
+            db_result = session.exec(statement_sql)
+            formatted_results = [dict(row) for row in db_result.mappings().all()]
                 
             if exercise_num is not None:
-                is_correct = validate_exercise(exercise_num, generated_sql)
+                is_correct = validate_exercise(exercise_num, formatted_results)
+                
         except Exception as e:
             compilation_error = e
             is_correct=False
@@ -70,17 +77,11 @@ class CompilerService:
                 )
             
             session.add(registro)
-            session.commit() # Salva no banco!
+            session.commit()
 
         if compilation_error:
             raise compilation_error
 
-        # 4. Execute SQL
-        statement_sql = text(generated_sql)
-        db_result = session.exec(statement_sql)
-        formatted_results = [dict(row) for row in db_result.mappings().all()]
-
-        # Returns the processed data
         return {
             "sql": generated_sql,
             "recognized_tables": [t['nome'] for t in symbol_table.tabelas_principais],

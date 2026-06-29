@@ -43,15 +43,13 @@ class Disciplina(SQLModel, table=True):
 class DisciplinaCurso(SQLModel, table=True):
     __tablename__ = "DISCIPLINACURSO"
     
-    # Chave primária composta por duas chaves estrangeiras
     id_disp: int = Field(foreign_key="DISCIPLINA.id", primary_key=True)
     id_curso: int = Field(foreign_key="CURSO.id", primary_key=True)
 
 
 class Aula(SQLModel, table=True):
     __tablename__ = "AULA"
-    
-    # Chave primária composta por quatro campos
+
     id_aluno: int = Field(foreign_key="ALUNO.id", primary_key=True)
     id_disp: int = Field(foreign_key="DISCIPLINA.id", primary_key=True)
     id_prof: int = Field(foreign_key="PROFESSOR.id", primary_key=True)

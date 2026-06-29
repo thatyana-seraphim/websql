@@ -7,10 +7,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Mapeia uma pasta local chamada 'data' para armazenar o banco de dados
-      # Isso garante a persistência dos dados entre reinicializações
       - ./data:/app/data
     environment:
-      # Caso você tenha variáveis de ambiente no futuro, elas entram aqui
       - ENVIRONMENT=production
     restart: unless-stopped

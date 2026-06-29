@@ -9,7 +9,6 @@ async def lifespan(app: FastAPI):
     # Roda antes do servidor começar a aceitar requisições
     create_db_and_tables()
     yield
-    # Limpeza ao desligar (se necessário)
 
 def create_app() -> FastAPI:
     app = FastAPI(
@@ -19,11 +18,8 @@ def create_app() -> FastAPI:
         lifespan=lifespan
     )
 
-    # Register the router (routes.py)
     app.include_router(router)
 
-    # Register the global Exception Handler
-    # Prevents "Internal Server Error" (500) if the user provides invalid syntax
     app.add_exception_handler(Exception, compiler_exception_handler)
 
     return app
